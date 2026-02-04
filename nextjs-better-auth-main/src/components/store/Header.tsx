@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart, Search, Menu, User, Store } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useView } from '@/contexts/ViewContext';
@@ -9,6 +10,7 @@ import LoginModal from './LoginModal';
 import { useSession, signOut } from '@/lib/auth/client';
 
 export default function Header() {
+  const router = useRouter();
   const { cartItemCount, setIsCartOpen } = useCart();
   const { setSearchQuery, selectedCategory, setSelectedCategory } = useView();
   const { data: session, isPending } = useSession();
@@ -92,7 +94,10 @@ export default function Header() {
                       </p>
                     </div>
                     <button
-                      onClick={() => signOut({ callbackURL: '/' })}
+                      onClick={async () => {
+                        await signOut();
+                        router.push('/');
+                      }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Sign out
