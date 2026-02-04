@@ -9,6 +9,14 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   baseURL: process.env.BETTER_AUTH_BASE_URL,
+  advanced: {
+    useSecureCookies: true,
+    cookiePrefix: "better-auth",
+  },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // 1 day
+  },
   plugins: [username({
     minUsernameLength: 4,
       maxUsernameLength: 10,

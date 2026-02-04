@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { X, User, Chrome } from 'lucide-react';
-import { signIn } from '@/lib/auth/client';
+import { signIn, useSession } from '@/lib/auth/client';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -10,8 +10,16 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+  const { data: session } = useSession();
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [isPending, startTransition] = useTransition();
+
+  // 如果已登录，自动关闭模态框
+  useEffect(() => {
+    if (session && isOpen) {
+      onClose();
+    }
+  }, [session, isOpen, onClose]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

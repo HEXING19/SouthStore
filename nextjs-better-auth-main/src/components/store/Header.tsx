@@ -6,10 +6,12 @@ import { ShoppingCart, Search, Menu, User, Store } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useView } from '@/contexts/ViewContext';
 import LoginModal from './LoginModal';
+import { useSession, signOut } from '@/lib/auth/client';
 
 export default function Header() {
   const { cartItemCount, setIsCartOpen } = useCart();
   const { setSearchQuery, selectedCategory, setSelectedCategory } = useView();
+  const { data: session, isPending } = useSession();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -66,13 +68,46 @@ export default function Header() {
                 <Search className="h-6 w-6" />
               </button>
 
-              <button
-                onClick={() => setIsLoginOpen(true)}
-                className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full"
-                title="Login"
-              >
-                <User className="h-6 w-6" />
-              </button>
+              {isPending ? (
+                <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
+              ) : session ? (
+                <div className="relative group">
+                  <button className="flex items-center justify-center p-1 rounded-full hover:bg-gray-100">
+                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                      <span className="text-indigo-600 font-medium text-sm">
+                        {session.user.name?.charAt(0).toUpperCase() ||
+                         session.user.email?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* 下拉菜单 */}
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {session.user.name || 'User'}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {session.user.email}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => signOut({ callbackURL: '/' })}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsLoginOpen(true)}
+                  className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full"
+                  title="Login"
+                >
+                  <User className="h-6 w-6" />
+                </button>
+              )}
 
               <div className="relative">
                 <button onClick={() => setIsCartOpen(true)} className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full">
