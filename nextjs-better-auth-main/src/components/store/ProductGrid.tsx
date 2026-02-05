@@ -1,17 +1,16 @@
 'use client';
 
 import { useView } from '@/contexts/ViewContext';
-import { PRODUCTS, CATEGORIES } from '@/constants/products';
+import { CATEGORIES } from '@/constants/products';
+import { useProducts } from '@/lib/hooks/useProducts';
 import ProductCard from './ProductCard';
 
 export default function ProductGrid() {
   const { searchQuery, selectedCategory } = useView();
 
-  const filteredProducts = PRODUCTS.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+  const { products, loading, error } = useProducts({
+    category: selectedCategory,
+    search: searchQuery,
   });
 
   return (
@@ -39,22 +38,41 @@ export default function ProductGrid() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredProducts.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-
-      {filteredProducts.length === 0 && (
-        <div className="text-center py-20">
-          <p className="text-gray-500 text-lg">No products found for your search.</p>
-          <a
-            href="/shop"
-            className="mt-4 inline-flex px-4 py-2 rounded-lg font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
-          >
-            Clear Search
-          </a>
+      {/* Loading state */}
+      {loading && (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
         </div>
+      )}
+
+      {/* Error state */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-800">{error}</p>
+        </div>
+      )}
+
+      {/* Products grid */}
+      {!loading && !error && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {products.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-gray-500 text-lg">No products found for your search.</p>
+              <a
+                href="/shop"
+                className="mt-4 inline-flex px-4 py-2 rounded-lg font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Clear Search
+              </a>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
