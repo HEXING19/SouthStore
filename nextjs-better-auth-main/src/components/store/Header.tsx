@@ -7,7 +7,8 @@ import { ShoppingCart, Search, Menu, User, Store, Settings } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext';
 import { useView } from '@/contexts/ViewContext';
 import LoginModal from './LoginModal';
-import { useSession, signOut } from '@/lib/auth/client';
+import { useSession } from '@/lib/auth/use-auth-session';
+import { signOut } from '@/lib/auth/client';
 
 export default function Header() {
   const router = useRouter();
