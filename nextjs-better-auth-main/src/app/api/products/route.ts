@@ -10,7 +10,7 @@ const querySchema = z.object({
   search: z.string().optional().default(''),
   limit: z.coerce.number().min(1).max(100).optional().default(50),
   offset: z.coerce.number().min(0).optional().default(0),
-  sort: z.enum(['columns, optional().default('name'),
+  sort: z.enum(['name', 'price', 'rating']).optional().default('name'),
   order: z.enum(['asc', 'desc']).optional().default('asc'),
 });
 
