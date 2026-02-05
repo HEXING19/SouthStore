@@ -45,7 +45,12 @@ export async function getProducts(options: {
   }
 
   // Apply sorting
-  const orderByColumn = products[sort as keyof typeof products];
+  const sortColumnMap = {
+    name: products.name,
+    price: products.price,
+    rating: products.rating,
+  };
+  const orderByColumn = sortColumnMap[sort as keyof typeof sortColumnMap] || products.name;
   const orderByClause = order === 'asc' ? asc(orderByColumn) : desc(orderByColumn);
   // @ts-ignore
   queryBuilder = queryBuilder.orderBy(orderByClause);

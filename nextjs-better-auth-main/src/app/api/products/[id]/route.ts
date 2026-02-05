@@ -11,11 +11,11 @@ const paramsSchema = z.object({
 // GET /api/products/[id] - Fetch a single product by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Validate parameters
-    const { id } = paramsSchema.parse(params);
+    // Await params (Next.js 15+)
+    const { id } = paramsSchema.parse(await params);
 
     const productResult = await db
       .select()
@@ -51,7 +51,7 @@ export async function GET(
       return NextResponse.json({
         success: false,
         error: "Invalid product ID",
-        details: error.errors,
+        details: error.issues,
       }, { status: 400 });
     }
 

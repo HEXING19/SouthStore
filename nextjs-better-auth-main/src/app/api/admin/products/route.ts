@@ -88,15 +88,25 @@ export async function POST(request: NextRequest) {
 
     const validatedData = insertProductSchema.parse(body);
 
+    // Prepare data for insertion
+    const insertData: any = {
+      price: validatedData.price.toString(),
+      rating: validatedData.rating.toString(),
+      stock: validatedData.stock.toString(),
+      name: validatedData.name,
+      category: validatedData.category,
+      description: validatedData.description,
+      image: validatedData.image,
+    };
+
+    if (validatedData.id) {
+      insertData.id = validatedData.id;
+    }
+
     // Insert product
     const newProduct = await db
       .insert(products)
-      .values({
-        ...validatedData,
-        price: validatedData.price.toString(),
-        rating: validatedData.rating.toString(),
-        stock: validatedData.stock.toString(),
-      })
+      .values(insertData as any)
       .returning();
 
     // Transform response
@@ -119,7 +129,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: "Invalid product data",
-        details: error.errors,
+        details: error.issues,
       }, { status: 400 });
     }
 
@@ -166,16 +176,23 @@ export async function PUT(request: NextRequest) {
 
     const validatedData = insertProductSchema.partial().parse(body);
 
+    // Prepare update data - exclude undefined values
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (validatedData.name !== undefined) updateData.name = validatedData.name;
+    if (validatedData.category !== undefined) updateData.category = validatedData.category;
+    if (validatedData.price !== undefined) updateData.price = validatedData.price.toString();
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.image !== undefined) updateData.image = validatedData.image;
+    if (validatedData.rating !== undefined) updateData.rating = validatedData.rating.toString();
+    if (validatedData.stock !== undefined) updateData.stock = validatedData.stock.toString();
+
     // Update product
     const updatedProduct = await db
       .update(products)
-      .set({
-        ...validatedData,
-        price: validatedData.price?.toString(),
-        rating: validatedData.rating?.toString(),
-        stock: validatedData.stock?.toString(),
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(products.id, body.id))
       .returning();
 
@@ -206,7 +223,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: "Invalid product data",
-        details: error.errors,
+        details: error.issues,
       }, { status: 400 });
     }
 

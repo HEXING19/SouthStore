@@ -56,7 +56,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply sorting
-    const orderByColumn = products[query.sort as keyof typeof products];
+    const sortColumnMap = {
+      name: products.name,
+      price: products.price,
+      rating: products.rating,
+    };
+    const orderByColumn = sortColumnMap[query.sort as keyof typeof sortColumnMap] || products.name;
     const orderByClause = query.order === 'asc' ? asc(orderByColumn) : desc(orderByColumn);
     // @ts-ignore
     queryBuilder = queryBuilder.orderBy(orderByClause);
@@ -92,7 +97,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: "Invalid query parameters",
-        details: error.errors,
+        details: error.issues,
       }, { status: 400 });
     }
 
