@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Search, Menu, User, Store } from 'lucide-react';
+import { ShoppingCart, Search, Menu, User, Store, Settings } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useView } from '@/contexts/ViewContext';
 import LoginModal from './LoginModal';
@@ -93,6 +93,16 @@ export default function Header() {
                         {session.user.email}
                       </p>
                     </div>
+                    {/* Admin Panel Link - Only visible to admins */}
+                    {session.user.role === 'admin' && (
+                      <Link
+                        href="/admin/products"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <Settings className="h-4 w-4" />
+                        后台管理
+                      </Link>
+                    )}
                     <button
                       onClick={async () => {
                         await signOut();
