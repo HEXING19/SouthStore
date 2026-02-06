@@ -146,8 +146,9 @@ export async function POST(request: NextRequest) {
       m_payment_id: orderId,
       amount: totalAmount.toFixed(2),
       item_name: itemDescription,
-      custom_int1: session.user.id,
-      custom_int2: sessionId,
+      // Use custom_str1/2 for string values (instead of custom_int1/2 which require numbers)
+      custom_str1: session.user.id,
+      custom_str2: sessionId,
     };
 
     // Only add non-empty optional fields
