@@ -7,7 +7,6 @@ import { z } from "zod";
 import { nanoid } from "nanoid";
 import { payfastConfig, getPayFastUrl, getReturnUrl, getCancelUrl, getNotifyUrl } from "@/lib/payfast/config";
 import { generatePayFastSignature } from "@/lib/payfast/signature";
-import type { CartItem } from "@/types";
 
 // Request validation schema
 const createPaymentSchema = z.object({
@@ -88,9 +87,21 @@ export async function POST(request: NextRequest) {
     const orderId = `order_${nanoid(12)}`;
     const sessionId = nanoid(16);
 
-    // 6. Create order record
-    const userName = session.user.name || '';
-    const userEmail = session.user.email || '';
+    // 6. Validate and prepare user data
+    const userEmail = session.user.email;
+
+    // Email is required for PayFast
+    if (!userEmail) {
+      return NextResponse.json({
+        success: false,
+        error: "Email address is required for checkout. Please update your profile.",
+      }, { status: 400 });
+    }
+
+    const userName = session.user.name || 'Customer';
+    const nameParts = userName.split(' ');
+    const nameFirst = nameParts[0] || 'Customer';
+    const nameLast = nameParts.slice(1).join(' ') || '';
 
     // Create item description for PayFast
     const itemDescription = cartItems.length === 1
@@ -124,23 +135,34 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 8. Generate PayFast payment data
-    const paymentData = {
+    // 8. Generate PayFast payment data (only include non-empty optional fields)
+    const paymentData: Record<string, string> = {
       merchant_id: payfastConfig.merchantId,
       merchant_key: payfastConfig.merchantKey,
       return_url: getReturnUrl(sessionId),
       cancel_url: getCancelUrl(),
       notify_url: getNotifyUrl(),
-      name_first: userName.split(' ')[0] || 'Customer',
-      name_last: userName.split(' ').slice(1).join(' ') || '',
       email_address: userEmail,
       m_payment_id: orderId,
       amount: totalAmount.toFixed(2),
       item_name: itemDescription,
-      item_description: cartItems.map(item => `${item.name} x${item.quantity}`).join(', '),
       custom_int1: session.user.id,
       custom_int2: sessionId,
     };
+
+    // Only add non-empty optional fields
+    if (nameFirst) paymentData.name_first = nameFirst;
+    if (nameLast) paymentData.name_last = nameLast;
+    if (itemDescription) paymentData.item_description = itemDescription;
+
+    // Debug logging
+    console.log('[PayFast] Creating payment:', {
+      orderId,
+      amount: totalAmount.toFixed(2),
+      email: userEmail,
+      itemCount: cartItems.length,
+      paymentUrl: getPayFastUrl(),
+    });
 
     // 9. Generate signature
     const signature = generatePayFastSignature(paymentData, payfastConfig.passphrase);
