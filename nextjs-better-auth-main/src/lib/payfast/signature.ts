@@ -16,17 +16,19 @@ export function generatePayFastSignature(data: Record<string, string | number>, 
   // Sort parameters alphabetically
   const sortedParams = filteredData.sort(([a], [b]) => a.localeCompare(b));
 
-  // Build string
+  // Build string with URL encoding (PayFast standard)
   let signatureString = sortedParams
     .map(([key, value]) => {
-      // Don't encode the value - PayFast expects unencoded values in signature
-      return `${key}=${String(value)}`;
+      // URL encode the value, then replace + with %20 (standard URL encoding)
+      // encodeURIComponent uses %20 for spaces, but application/x-www-form-urlencoded uses +
+      const encoded = encodeURIComponent(String(value)).replace(/%20/g, '+');
+      return `${key}=${encoded}`;
     })
     .join('&');
 
-  // Append passphrase if provided (unencoded)
+  // Append passphrase if provided (URL encoded)
   if (passphrase) {
-    signatureString += `&passphrase=${passphrase}`;
+    signatureString += `&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`;
   }
 
   console.log('[PayFast Signature] Input data:', Object.keys(data).sort());
