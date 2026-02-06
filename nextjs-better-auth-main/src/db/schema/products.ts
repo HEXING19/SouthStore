@@ -1,4 +1,4 @@
-import { pgTable, text, numeric, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, numeric, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -10,7 +10,7 @@ export const products = pgTable("products", {
   description: text("description").notNull(),
   image: text("image").notNull(),
   rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("0"),
-  stock: text("stock").default("0"),
+  stock: integer("stock").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow(),
   updatedAt: timestamp("updatedAt").defaultNow().$onUpdate(() => new Date()),
 }, (table) => ({

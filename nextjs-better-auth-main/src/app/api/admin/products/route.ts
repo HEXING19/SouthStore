@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       ...p,
       price: parseFloat(p.price as string),
       rating: parseFloat(p.rating as string),
-      stock: parseInt(p.stock as string || '0'),
+      stock: p.stock as number,
     }));
 
     return NextResponse.json({
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
       ...newProduct[0],
       price: parseFloat(newProduct[0].price as string),
       rating: parseFloat(newProduct[0].rating as string),
-      stock: parseInt(newProduct[0].stock as string || '0'),
+      stock: newProduct[0].stock as number,
     };
 
     return NextResponse.json({
@@ -208,7 +208,7 @@ export async function PUT(request: NextRequest) {
       ...updatedProduct[0],
       price: parseFloat(updatedProduct[0].price as string),
       rating: parseFloat(updatedProduct[0].rating as string),
-      stock: parseInt(updatedProduct[0].stock as string || '0'),
+      stock: updatedProduct[0].stock as number,
     };
 
     return NextResponse.json({

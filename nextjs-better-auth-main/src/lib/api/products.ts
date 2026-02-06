@@ -66,7 +66,7 @@ export async function getProducts(options: {
     ...p,
     price: parseFloat(p.price as string),
     rating: parseFloat(p.rating as string),
-    stock: parseInt(p.stock as string || '0'),
+    stock: p.stock as number,
   }));
 }
 
@@ -86,7 +86,7 @@ export async function getProductById(id: string) {
     ...product,
     price: parseFloat(product.price as string),
     rating: parseFloat(product.rating as string),
-    stock: parseInt(product.stock as string || '0'),
+    stock: product.stock as number,
   };
 }
 

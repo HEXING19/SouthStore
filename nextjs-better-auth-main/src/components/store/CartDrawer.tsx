@@ -1,12 +1,73 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
-import { X, Plus, Minus, Trash2, ShoppingCart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { X, Plus, Minus, Trash2, ShoppingCart, Loader2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { CURRENCY_SYMBOL } from '@/constants/products';
+import { useSession } from '@/lib/auth/use-auth-session';
+import { toast } from 'sonner';
 
 export default function CartDrawer() {
+  const router = useRouter();
   const { cart, cartTotal, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity } = useCart();
+  const { data: session, isPending } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    // Check if user is logged in
+    if (!session) {
+      toast.error('Please login to checkout');
+      setIsCartOpen(false);
+      router.push('/signin');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Create payment
+      const response = await fetch('/api/checkout/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cartItems: cart,
+          totalAmount: cartTotal,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to create payment');
+      }
+
+      // Create form and submit to PayFast
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = result.paymentUrl;
+
+      Object.entries(result.paymentData).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value as string;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to proceed to checkout');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className={`fixed inset-0 overflow-hidden z-[60] ${isCartOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
@@ -87,8 +148,21 @@ export default function CartDrawer() {
                   </div>
                   <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
                   <div className="mt-6">
-                    <button className="w-full flex justify-center items-center py-3 text-lg rounded-lg font-medium bg-orange-500 text-white hover:bg-orange-600">
-                      Checkout
+                    <button
+                      onClick={handleCheckout}
+                      disabled={isLoading || !session || isPending}
+                      className="w-full flex justify-center items-center py-3 text-lg rounded-lg font-medium bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : session ? (
+                        'Checkout'
+                      ) : (
+                        'Please Login to Checkout'
+                      )}
                     </button>
                   </div>
                   <div className="mt-6 flex justify-center text-sm text-center text-gray-500">

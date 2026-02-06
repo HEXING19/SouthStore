@@ -36,7 +36,7 @@ export async function GET(
       ...product,
       price: parseFloat(product.price as string),
       rating: parseFloat(product.rating as string),
-      stock: parseInt(product.stock as string || '0'),
+      stock: product.stock as number,
     };
 
     return NextResponse.json({
