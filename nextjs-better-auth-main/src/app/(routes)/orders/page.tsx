@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Calendar, CreditCard, Filter } from 'lucide-react';
+import { Package, Calendar, CreditCard, Filter, ArrowLeft, Home } from 'lucide-react';
 import { useSession } from '@/lib/auth/use-auth-session';
 import { CURRENCY_SYMBOL } from '@/constants/products';
 import { useRouter } from 'next/navigation';
@@ -92,6 +92,15 @@ export default function OrdersPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              Back to Home
+            </Link>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Orders</h1>
           <p className="text-gray-600">View and track your order history</p>
         </div>

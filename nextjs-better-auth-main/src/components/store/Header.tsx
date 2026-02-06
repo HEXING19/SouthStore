@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Search, Menu, User, Store, Settings, Package } from 'lucide-react';
+import { ShoppingCart, Search, Menu, User, Store, Settings, Package, ClipboardList } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useView } from '@/contexts/ViewContext';
 import LoginModal from './LoginModal';
@@ -115,7 +115,7 @@ export default function Header() {
                           href="/admin/orders"
                           className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                         >
-                          <Settings className="h-4 w-4" />
+                          <ClipboardList className="h-4 w-4" />
                           订单管理
                         </Link>
                       </>
