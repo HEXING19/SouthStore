@@ -8,23 +8,36 @@ import crypto from 'crypto';
  */
 export function generatePayFastSignature(data: Record<string, string | number>, passphrase?: string): string {
   // Filter out empty values
-  const filteredData = Object.entries(data).filter(([_, value]) => value !== '' && value !== null && value !== undefined);
+  const filteredData = Object.entries(data).filter(([_, value]) => {
+    const strValue = String(value);
+    return strValue !== '' && strValue !== null && strValue !== undefined;
+  });
 
   // Sort parameters alphabetically
   const sortedParams = filteredData.sort(([a], [b]) => a.localeCompare(b));
 
   // Build string
   let signatureString = sortedParams
-    .map(([key, value]) => `${key}=${encodeURIComponent(String(value)).replace(/%20/g, '+')}`)
+    .map(([key, value]) => {
+      // Don't encode the value - PayFast expects unencoded values in signature
+      return `${key}=${String(value)}`;
+    })
     .join('&');
 
-  // Append passphrase if provided
+  // Append passphrase if provided (unencoded)
   if (passphrase) {
-    signatureString += `&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`;
+    signatureString += `&passphrase=${passphrase}`;
   }
 
+  console.log('[PayFast Signature] Input data:', Object.keys(data).sort());
+  console.log('[PayFast Signature] Signature string:', signatureString);
+
   // Generate MD5 hash
-  return crypto.createHash('md5').update(signatureString).digest('hex');
+  const signature = crypto.createHash('md5').update(signatureString).digest('hex');
+
+  console.log('[PayFast Signature] Generated signature:', signature);
+
+  return signature;
 }
 
 /**
